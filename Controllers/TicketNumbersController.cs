@@ -16,7 +16,7 @@ namespace LottoApi.Controllers
         public TicketNumbersController(MongoDbContext dbContext)
         {
             _dbContext = dbContext;
-            _collection = _dbContext.TicketHistory;
+            _collection = _dbContext.TicketNumbers;
         }
 
         [HttpGet]
