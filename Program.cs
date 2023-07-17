@@ -1,26 +1,39 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using LottoApi.Models;
 using LottoApi.Data;
-using MongoDBService;
+using MongoDB.Driver;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<MongoDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MongoDbContext") ?? throw new InvalidOperationException("Connection string 'MongoDbContext' not found.")));
 
+// Configure MongoDB settings
 builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("MongoDB"));
-builder.Services.AddSingleton<MongoDbService>();
-// Add services to the container.
 
+// Add MongoDB client and database
+builder.Services.AddSingleton<IMongoClient>(serviceProvider =>
+{
+    var settings = serviceProvider.GetRequiredService<IOptions<MongoDBSettings>>().Value;
+    return new MongoClient(settings.ConnectionURI);
+});
+
+builder.Services.AddScoped<IMongoDatabase>(serviceProvider =>
+{
+    var client = serviceProvider.GetRequiredService<IMongoClient>();
+    var settings = serviceProvider.GetRequiredService<IOptions<MongoDBSettings>>().Value;
+    return client.GetDatabase(settings.DatabaseName);
+});
+
+builder.Services.AddScoped<MongoDbContext>();
+
+// Add services to the container
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -28,9 +41,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
