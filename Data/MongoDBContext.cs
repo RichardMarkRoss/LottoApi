@@ -7,11 +7,15 @@ namespace LottoApi.Data
     {
         private readonly IMongoDatabase _database;
 
-        public MongoDbContext(IConfiguration configuration)
+        public MongoDbContext(string connectionString, string databaseName)
         {
-            var connectionString = configuration.GetConnectionString("MongoDB");
             var client = new MongoClient(connectionString);
-            _database = client.GetDatabase("Lotto");
+            _database = client.GetDatabase(databaseName);
+        }
+
+        public IMongoCollection<T> GetCollection<T>(string collectionName)
+        {
+            return _database.GetCollection<T>(collectionName);
         }
 
         public IMongoCollection<LottoNumbers> LottoNumbers => _database.GetCollection<LottoNumbers>("LottoNumbers");

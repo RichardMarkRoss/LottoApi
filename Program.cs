@@ -1,5 +1,15 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using LottoApi.Models;
+using LottoApi.Data;
+using MongoDBService;
 
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<MongoDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MongoDbContext") ?? throw new InvalidOperationException("Connection string 'MongoDbContext' not found.")));
+
+builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("MongoDB"));
+builder.Services.AddSingleton<MongoDbService>();
 // Add services to the container.
 
 builder.Services.AddControllers();
