@@ -1,4 +1,6 @@
+using LottoApi.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace LottoApi.Data
@@ -7,11 +9,15 @@ namespace LottoApi.Data
     {
         private readonly IMongoDatabase _database;
 
-        public MongoDbContext(string connectionString, string databaseName)
+        public MongoDbContext(IOptions<MongoDBSettings> settings)
         {
+            var connectionString = settings.Value.ConnectionString;
+            var databaseName = settings.Value.DatabaseName;
+
             var client = new MongoClient(connectionString);
             _database = client.GetDatabase(databaseName);
         }
+
 
         public IMongoCollection<T> GetCollection<T>(string collectionName)
         {

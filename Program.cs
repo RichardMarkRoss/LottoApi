@@ -10,10 +10,13 @@ using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configuration
-builder.Configuration.AddJsonFile("appsettings.json");
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json")
+    .Build();
 
 // Configure MongoDB settings
-builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("MongoDB"));
+builder.Services.Configure<MongoDBSettings>(configuration.GetSection("MongoDB"));
 
 // Add MongoDB client and database
 builder.Services.AddSingleton<IMongoClient>(serviceProvider =>
@@ -31,13 +34,53 @@ builder.Services.AddScoped<IMongoDatabase>(serviceProvider =>
 
 builder.Services.AddScoped<MongoDbContext>();
 
-// Add services to the container
+// Retrieve collection names
+var mongoDBSettings = configuration.GetSection("MongoDB").Get<MongoDBSettings>();
+var collectionNames = mongoDBSettings.CollectionNames;
+
+// Register collections in the dependency injection container
+foreach (var collectionName in collectionNames)
+{
+    if (collectionName == "Users")
+    {
+        builder.Services.AddScoped(serviceProvider =>
+    {
+        var mongoDbContext = serviceProvider.GetRequiredService<MongoDbContext>();
+        return mongoDbContext.GetCollection<Users>(collectionName);
+    });
+    }
+    else if (collectionName == "LottoNumbers")
+    {
+        builder.Services.AddScoped(serviceProvider =>
+        {
+            var mongoDbContext = serviceProvider.GetRequiredService<MongoDbContext>();
+            return mongoDbContext.GetCollection<LottoNumbers>(collectionName);
+        });
+    }
+    else if (collectionName == "TicketNumbers")
+    {
+        builder.Services.AddScoped(serviceProvider =>
+        {
+            var mongoDbContext = serviceProvider.GetRequiredService<MongoDbContext>();
+            return mongoDbContext.GetCollection<TicketNumbers>(collectionName);
+        });
+    } else {
+        throw new InvalidOperationException($"Invalid collection name: {collectionName}");
+    }
+    
+
+}
+
+// Other service registrations
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient();
 
 var app = builder.Build();
+
+// Exception handling
+app.UseExceptionHandler("/error"); // Custom error handling endpoint
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
