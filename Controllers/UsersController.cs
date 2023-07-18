@@ -29,7 +29,7 @@ namespace LottoApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Users>> GetUserById(string id)
         {
-            var user = await _collection.Find(u => u.Id == id).FirstOrDefaultAsync();
+            var user = await _collection.Find(u => u._id == id).FirstOrDefaultAsync();
 
             if (user == null)
                 return NotFound();
@@ -41,13 +41,13 @@ namespace LottoApi.Controllers
         public async Task<ActionResult<Users>> CreateUser(Users user)
         {
             await _collection.InsertOneAsync(user);
-            return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
+            return CreatedAtAction(nameof(GetUserById), new { id = user._id }, user);
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult<Users>> UpdateUser(string id, Users user)
         {
-            var existingUser = await _collection.FindOneAndReplaceAsync(u => u.Id == id, user);
+            var existingUser = await _collection.FindOneAndReplaceAsync(u => u._id == id, user);
 
             if (existingUser == null)
                 return NotFound();
@@ -58,7 +58,7 @@ namespace LottoApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var result = await _collection.DeleteOneAsync(u => u.Id == id);
+            var result = await _collection.DeleteOneAsync(u => u._id == id);
 
             if (result.DeletedCount == 0)
                 return NotFound();

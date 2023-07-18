@@ -26,6 +26,13 @@ namespace LottoApi.Controllers
             return Ok(lottoNumbers);
         }
 
+        [HttpPost]
+        public async Task<ActionResult<LottoNumbers>> CreateTicketHistory(LottoNumbers LottoNumbers)
+        {
+            await _collection.InsertOneAsync(LottoNumbers);
+            return CreatedAtAction(nameof(GetAllLottoNumbers), new { id = LottoNumbers._id }, LottoNumbers);
+        }
+
         // GET: api/LottoNumbers/search?drawDate=2023-07-01&gameType=Daily
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<LottoNumbers>>> GetFilteredTicketHistory(string drawDate, string gameType)

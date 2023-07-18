@@ -6,6 +6,7 @@ using LottoApi.Models;
 using LottoApi.Data;
 using MongoDB.Driver;
 using Microsoft.Extensions.Options;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,10 +45,10 @@ foreach (var collectionName in collectionNames)
     if (collectionName == "Users")
     {
         builder.Services.AddScoped(serviceProvider =>
-    {
-        var mongoDbContext = serviceProvider.GetRequiredService<MongoDbContext>();
-        return mongoDbContext.GetCollection<Users>(collectionName);
-    });
+        {
+            var mongoDbContext = serviceProvider.GetRequiredService<MongoDbContext>();
+            return mongoDbContext.GetCollection<Users>(collectionName);
+        });
     }
     else if (collectionName == "LottoNumbers")
     {
@@ -64,11 +65,11 @@ foreach (var collectionName in collectionNames)
             var mongoDbContext = serviceProvider.GetRequiredService<MongoDbContext>();
             return mongoDbContext.GetCollection<TicketNumbers>(collectionName);
         });
-    } else {
+    }
+    else
+    {
         throw new InvalidOperationException($"Invalid collection name: {collectionName}");
     }
-    
-
 }
 
 // Other service registrations
@@ -81,6 +82,14 @@ var app = builder.Build();
 
 // Exception handling
 app.UseExceptionHandler("/error"); // Custom error handling endpoint
+
+// CORS configuration
+app.UseCors(options =>
+{
+    options.AllowAnyOrigin();
+    options.AllowAnyMethod();
+    options.AllowAnyHeader();
+});
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

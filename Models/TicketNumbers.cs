@@ -1,5 +1,11 @@
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
+
 public class TicketNumbers
 {
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string _id { get; set; }
     public string UserId { get; set; }
     public string TcketID { get; set; }
     public string PurchaseDate { get; set; }

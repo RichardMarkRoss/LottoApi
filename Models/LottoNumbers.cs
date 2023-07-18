@@ -1,5 +1,11 @@
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson;
+
 public class LottoNumbers
 {
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string _id { get; set; }
     public string DrawDate { get; set; }
     public string NextDrawDate { get; set; }
     public string GameType { get; set; }
